@@ -49,6 +49,11 @@ def counter():
                                             {'name': 1, 'hidden': 1})
     else:
         recs = db['counter_db'].counts.find({'hidden': {'$ne': True}}, {'name': 1})
+
+    if not recs:
+        return jsonify({'text': 'No counters created yet',
+                        'mrkdwn': True})
+
     return jsonify({'text': '\n'.join(['*{}*'.format(rec['name']) if not rec.get('hidden') else '_{}_'.format(rec['name']) for rec in recs]),
                     'mrkdwn': True})
 
@@ -91,7 +96,7 @@ def delete_counter():
                         'mrkdwn': True})
 
     db['counter_db'].counts.delete_one({'name': name})
-    return jsonify({'text': '{} counter deleted'.format(name),
+    return jsonify({'text': '*{}* counter deleted'.format(name),
                     'mrkdwn': True})
 
 
