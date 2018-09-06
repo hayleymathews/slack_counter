@@ -1,3 +1,4 @@
+import os
 import time
 import shlex
 from datetime import datetime
@@ -6,7 +7,9 @@ from flask import Flask, request, jsonify
 from pymongo import MongoClient
 
 app = Flask(__name__)
-db = MongoClient("mongodb://localhost:27017/")
+
+mongo_url = os.environ.get('MONGODB_URI', "mongodb://localhost:27017/")
+db = MongoClient(mongo_url)
 
 
 def format_date(timestamp_string):
