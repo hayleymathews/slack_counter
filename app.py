@@ -79,7 +79,7 @@ def incr_counter():
                         'response_type': 'in_channel',
                         'mrkdwn': True})
 
-    db['counter_db'].counts.update_one({'name': name},
+    db['counter_db'].counts.update_one({'name': name, 'team': team},
                                        {'$inc': {'count': val},
                                         '$set': {'log.' + str(int(time.time() * 1000)): {'user': user, 'val': val}},
                                         '$setOnInsert': {'creator': user, 'hidden': hidden, 'locked': locked, 'team': team}},
