@@ -34,7 +34,7 @@ def counter():
         rec = db['counter_db'].counts.find_one({'name': name}, {'_id': 0, 'count': 1, 'log': 1})
 
         if not rec:
-            return jsonify({'text': '{} counter does not exist'.format(name),
+            return jsonify({'text': '*{}* counter does not exist'.format(name),
                             'mrkdwn': True})
 
         count = rec['count']
@@ -44,11 +44,11 @@ def counter():
                         'mrkdwn': True})
 
     if private_channel:
-        recs = db['counter_db'].counts.find({'$or': [{'hidden': {'$ne': True}},
-                                                     {'creator': user}]},
-                                            {'name': 1, 'hidden': 1})
+        recs = list(db['counter_db'].counts.find({'$or': [{'hidden': {'$ne': True}},
+                                                          {'creator': user}]},
+                                                 {'name': 1, 'hidden': 1}))
     else:
-        recs = db['counter_db'].counts.find({'hidden': {'$ne': True}}, {'name': 1})
+        recs = list(db['counter_db'].counts.find({'hidden': {'$ne': True}}, {'name': 1}))
 
     if not recs:
         return jsonify({'text': 'No counters created yet',
