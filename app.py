@@ -41,7 +41,7 @@ def counter():
                        'mrkdwn': True}
             return requests.post(response_url, json=payload)
 
-        payload = {'text': '*{}* count: `{:.0f}`  \n {}'.format(name, rec['count'], last_updates),
+        payload = {'text': '*{}* count: `{:.0f}`'.format(name, rec['count']),
                    'response_type': 'in_channel',
                    'attachments': [{'text': '`{:+.0f}` by <@{}> {}'.format(dtls['val'], dtls['user'], format_date(date))}
                                    for date, dtls in sorted(rec['log'].items(), reverse=True)[:5]],
