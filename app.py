@@ -46,7 +46,7 @@ def counter():
                    'attachments': [{'text': '`{:+.0f}` by <@{}> {}'.format(dtls['val'], dtls['user'], format_date(date))}
                                    for date, dtls in sorted(rec['log'].items(), reverse=True)[:5]],
                    'mrkdwn': True}
-                   return requests.post(response_url, json=payload)
+        return requests.post(response_url, json=payload)
 
     if private_channel:
         recs = list(db['counter_db'].counts.find({'$or': [{'hidden': {'$ne': True}},
