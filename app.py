@@ -35,12 +35,14 @@ def counter():
 
         if not rec:
             return jsonify({'text': '*{}* counter does not exist'.format(name),
+                            'response_type': 'in_channel',
                             'mrkdwn': True})
 
         count = rec['count']
         last_updates = '\n'.join(['`{:+.0f}` by <@{}> {}'.format(dtls['val'], dtls['user'], format_date(date))
                                   for date, dtls in sorted(rec['log'].items(), reverse=True)[:5]])
         return jsonify({'text': '*{}* count: `{:.0f}`  \n {}'.format(name, count, last_updates),
+                        'response_type': 'in_channel',
                         'mrkdwn': True})
 
     if private_channel:
@@ -52,9 +54,11 @@ def counter():
 
     if not recs:
         return jsonify({'text': 'No counters created yet',
+                        'response_type': 'in_channel',
                         'mrkdwn': True})
 
     return jsonify({'text': '\n'.join(['*{}*'.format(rec['name']) if not rec.get('hidden') else '_{}_'.format(rec['name']) for rec in recs]),
+                    'response_type': 'in_channel',
                     'mrkdwn': True})
 
 
@@ -71,6 +75,7 @@ def incr_counter():
     rec = db['counter_db'].counts.find_one({'name': name}, {'_id': 0, 'creator': 1, 'locked': 1})
     if rec and rec.get('locked') and rec['creator'] != user:
         return jsonify({'text': 'Can not increment a locked counter you do not own',
+                        'response_type': 'in_channel',
                         'mrkdwn': True})
 
     db['counter_db'].counts.update_one({'name': name},
@@ -81,6 +86,7 @@ def incr_counter():
 
     new_count = db['counter_db'].counts.find_one({'name': name}, {'_id': 0, 'count': 1})['count']
     return jsonify({'text': '`{:+.0f}` for: *{}* \n *{}* count: `{:.0f}`'.format(val, name, name, new_count),
+                    'response_type': 'in_channel',
                     'mrkdwn': True})
 
 
@@ -93,10 +99,12 @@ def delete_counter():
     rec = db['counter_db'].counts.find_one({'name': name}, {'_id': 0, 'creator': 1})
     if rec['creator'] != user:
         return jsonify({'text': 'Can not delete a counter you did not create',
+                        'response_type': 'in_channel',
                         'mrkdwn': True})
 
     db['counter_db'].counts.delete_one({'name': name})
     return jsonify({'text': '*{}* counter deleted'.format(name),
+                    'response_type': 'in_channel',
                     'mrkdwn': True})
 
 
