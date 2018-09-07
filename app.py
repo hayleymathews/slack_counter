@@ -31,7 +31,7 @@ def counter():
     private_channel = post_data.get('channel_name') == 'directmessage'
 
     if name:
-        rec = db['counter_db'].counts.find_one({'name': name}, {'_id': 0, 'count': 1, 'log': 1})
+        rec = db['counter_db'].counts.find_one({'name': name, 'team': team}, {'_id': 0, 'count': 1, 'log': 1})
 
         if not rec:
             return jsonify({'text': '*{}* counter does not exist'.format(name),
@@ -47,10 +47,11 @@ def counter():
 
     if private_channel:
         recs = list(db['counter_db'].counts.find({'$or': [{'hidden': {'$ne': True}},
-                                                          {'creator': user}]},
+                                                          {'creator': user}],
+                                                  'team': team},
                                                  {'name': 1, 'hidden': 1}))
     else:
-        recs = list(db['counter_db'].counts.find({'hidden': {'$ne': True}}, {'name': 1}))
+        recs = list(db['counter_db'].counts.find({'hidden': {'$ne': True}, 'team': team}, {'name': 1}))
 
     if not recs:
         return jsonify({'text': 'No counters created yet',
@@ -72,7 +73,7 @@ def incr_counter():
     hidden = try_index(text, 2, False) == 'hidden'
     locked = try_index(text, 3, False) == 'locked'
 
-    rec = db['counter_db'].counts.find_one({'name': name}, {'_id': 0, 'creator': 1, 'locked': 1})
+    rec = db['counter_db'].counts.find_one({'name': name, 'team': team}, {'_id': 0, 'creator': 1, 'locked': 1})
     if rec and rec.get('locked') and rec['creator'] != user:
         return jsonify({'text': 'Can not increment a locked counter you do not own',
                         'response_type': 'in_channel',
@@ -81,10 +82,10 @@ def incr_counter():
     db['counter_db'].counts.update_one({'name': name},
                                        {'$inc': {'count': val},
                                         '$set': {'log.' + str(int(time.time() * 1000)): {'user': user, 'val': val}},
-                                        '$setOnInsert': {'creator': user, 'hidden': hidden, 'locked': locked}},
+                                        '$setOnInsert': {'creator': user, 'hidden': hidden, 'locked': locked, 'team': team}},
                                        upsert=True)
 
-    new_count = db['counter_db'].counts.find_one({'name': name}, {'_id': 0, 'count': 1})['count']
+    new_count = db['counter_db'].counts.find_one({'name': name, 'team': team}, {'_id': 0, 'count': 1})['count']
     return jsonify({'text': '`{:+.0f}` for: *{}* \n *{}* count: `{:.0f}`'.format(val, name, name, new_count),
                     'response_type': 'in_channel',
                     'mrkdwn': True})
@@ -96,13 +97,13 @@ def delete_counter():
     team, user = post_data.get('team_id'), post_data['user_id']
     name = post_data.get('text')
 
-    rec = db['counter_db'].counts.find_one({'name': name}, {'_id': 0, 'creator': 1})
+    rec = db['counter_db'].counts.find_one({'name': name, 'team': team}, {'_id': 0, 'creator': 1})
     if rec['creator'] != user:
         return jsonify({'text': 'Can not delete a counter you did not create',
                         'response_type': 'in_channel',
                         'mrkdwn': True})
 
-    db['counter_db'].counts.delete_one({'name': name})
+    db['counter_db'].counts.delete_one({'name': name, 'team': team})
     return jsonify({'text': '*{}* counter deleted'.format(name),
                     'response_type': 'in_channel',
                     'mrkdwn': True})
